@@ -19,7 +19,6 @@ def count_parameters(model):
     print(table)
     print(f"Total Trainable Params: {total_params}")
     return total_params
-    
 
 
 
@@ -44,7 +43,7 @@ def angle_between_batch(v1, v2):
 class Reconstruction(nn.Module):
     def __init__(self, z_dim=1024):
         super().__init__()
-     
+
         self.main = nn.Sequential(
 
             nn.ConvTranspose3d(
@@ -52,8 +51,8 @@ class Reconstruction(nn.Module):
                 out_channels = 64 * 4,
                 kernel_size = 4,
                 stride = 1,
-                padding = 0 
-            ), 
+                padding = 0
+            ),
             nn.BatchNorm3d(64 * 4),
             nn.ReLU(),
 
@@ -65,8 +64,8 @@ class Reconstruction(nn.Module):
                 padding = 1
             ),
             nn.BatchNorm3d(64 * 2),
-            nn.ReLU(), 
-     
+            nn.ReLU(),
+
             nn.ConvTranspose3d(
                 in_channels = 64 * 2,
                 out_channels = 64 * 1,
@@ -75,7 +74,7 @@ class Reconstruction(nn.Module):
                 padding = 1
             ),
             nn.BatchNorm3d(64 * 1),
-            nn.ReLU(), 
+            nn.ReLU(),
 
             nn.ConvTranspose3d(
                 in_channels = 64 * 1,
@@ -83,14 +82,14 @@ class Reconstruction(nn.Module):
                 kernel_size = 4,
                 stride = 2,
                 padding = 1
-            ),    
+            ),
 
-            nn.Sigmoid()                     
+            nn.Sigmoid()
         )
         self.main.apply(init_weights)
-        
+
     def forward(self, x):
-        x = x.view(x.shape[0], x.shape[1], 1, 1, 1) 
+        x = x.view(x.shape[0], x.shape[1], 1, 1, 1)
         x = self.main(x)
         x = x.view(x.shape[0], x.shape[2], x.shape[3], x.shape[4])
         return x
@@ -98,7 +97,7 @@ class Reconstruction(nn.Module):
 class Encoder_slim(nn.Module):
     def __init__(self, inp=4):
         super(Encoder_slim, self).__init__()
-        self.conv1 = torch.nn.Conv1d(inp, 64, 1) 
+        self.conv1 = torch.nn.Conv1d(inp, 64, 1)
         self.conv2 = torch.nn.Conv1d(64, 128, 1)
         self.conv3 = torch.nn.Conv1d(128, 1024, 1)
         self.bn1 = nn.BatchNorm1d(64)
@@ -113,11 +112,11 @@ class Encoder_slim(nn.Module):
         # x = torch.max(x, 2, keepdim=True)[0]
         # x = x.view(-1, 1024)
         return x
-    
+
 class Encoder_middle(nn.Module):
     def __init__(self, inp=4):
         super(Encoder_middle, self).__init__()
-        self.conv1 = torch.nn.Conv1d(inp, 64, 1) 
+        self.conv1 = torch.nn.Conv1d(inp, 64, 1)
         self.conv2 = torch.nn.Conv1d(64+inp, 128, 1)
         self.conv3 = torch.nn.Conv1d(128+inp, 512, 1)
         self.conv4 = torch.nn.Conv1d(512+inp, 1024, 1)
@@ -138,12 +137,12 @@ class Encoder_middle(nn.Module):
         # x = torch.max(x, 2, keepdim=True)[0]
         # x = x.view(-1, 1024)
         return x
-    
+
 class Encoder(nn.Module):
     def __init__(self, inp=4):
         super(Encoder, self).__init__()
-        
-        self.conv1 = torch.nn.Conv1d(inp, 64, 1) 
+
+        self.conv1 = torch.nn.Conv1d(inp, 64, 1)
         self.conv2 = torch.nn.Conv1d(64+inp, 128, 1)
         self.conv3 = torch.nn.Conv1d(128+inp, 512, 1)
         self.conv4 = torch.nn.Conv1d(512+inp, 1024, 1)
@@ -153,7 +152,6 @@ class Encoder(nn.Module):
         self.f = nn.Sequential(
             nn.Conv1d(64+128+512+inp, 1024, 1),
             # nn.ReLU()
-            
         )
 
 
@@ -197,7 +195,7 @@ class TriangleNet(nn.Module):
         elif descriptor_type == 'C':
             self.extractor = self.extract_feature_C
         else:
-            raise Exception 
+            raise Exception
 
     def extract_feature_A(self, points, norms, f_num):
         p_num = points.shape[1]
@@ -210,7 +208,7 @@ class TriangleNet(nn.Module):
         ang1b = angle_between_batch(p2-p1, n2)
         ang1c = angle_between_batch(n1, n2)
         buf = torch.cat([dis1,ang1a, ang1b, ang1c],dim=2)
-        
+
         if self.scale_invariant:
             max_dis = buf[:,0].max()
             buf[:,0] = buf[:,0]/max_dis
@@ -227,18 +225,18 @@ class TriangleNet(nn.Module):
         dis1 = vlen(p1-p2)
         dis2 = vlen(p2-p3)
         dis3 = vlen(p3-p1)
-        
+
         ang1a = angle_between_batch(p1-p2, n1)
         ang1b = angle_between_batch(p1-p3, n1)
         ang2a = angle_between_batch(p2-p1, n2)
         ang2b = angle_between_batch(p2-p3, n2)
         ang3a = angle_between_batch(p3-p1, n3)
         ang3b = angle_between_batch(p3-p2, n3)
-        
+
         angt1 = angle_between_batch(p1-p2, p1-p3)
         angt2 = angle_between_batch(p2-p1, p2-p3)
         angt3 = angle_between_batch(p3-p1, p3-p2)
-        
+
         buf = torch.cat([dis1,dis2,dis3,ang1a,ang1b,ang2a,ang2b,ang3a,ang3b,angt1,angt2,angt3],dim=2)
 
         if self.scale_invariant:
@@ -251,43 +249,43 @@ class TriangleNet(nn.Module):
         p_num = points.shape[1]
         idx = torch.randint(p_num, size=(f_num, 3))
         idx0=torch.arange(p_num).view(-1,1).repeat((1,f_num//p_num)).flatten()
-        
+
         p1, p2, p3 = points[:,idx0], points[:,idx[:,1]], points[:,idx[:,2]]
         n1, n2, n3 = norms[:,idx0], norms[:,idx[:,1]], norms[:,idx[:,2]]
         dis1 = vlen(p1-p2)
         dis2 = vlen(p2-p3)
         dis3 = vlen(p3-p1)
-        
+
         ang1a = angle_between_batch(p1-p2, n1)
         ang1b = angle_between_batch(p1-p3, n1)
         ang2a = angle_between_batch(p2-p1, n2)
         ang2b = angle_between_batch(p2-p3, n2)
         ang3a = angle_between_batch(p3-p1, n3)
         ang3b = angle_between_batch(p3-p2, n3)
-        
+
         angt1 = angle_between_batch(p1-p2, p1-p3)
         angt2 = angle_between_batch(p2-p1, p2-p3)
         angt3 = angle_between_batch(p3-p1, p3-p2)
-        
+
         buf = torch.cat([dis1,dis2,dis3,ang1a,ang1b,ang2a,ang2b,ang3a,ang3b,angt1,angt2,angt3],dim=2)
-        
+
         mid = (p1+p2+p3)/3
-        
+
         mn1 = angle_between_batch(p1-mid, n1)
         mn2 = angle_between_batch(p2-mid, n2)
-        mn3 = angle_between_batch(p3-mid, n3)    
-        
+        mn3 = angle_between_batch(p3-mid, n3)
+
         dism1 = vlen(p1-mid)
         dism2 = vlen(p2-mid)
         dism3 = vlen(p3-mid)
-        
+
         angm1a = angle_between_batch(p1-p2, p1-mid)
         angm1b = angle_between_batch(p1-p3, p1-mid)
         angm2a = angle_between_batch(p2-p1, p2-mid)
         angm2b = angle_between_batch(p2-p3, p2-mid)
         angm3a = angle_between_batch(p3-p1, p3-mid)
         angm3b = angle_between_batch(p3-p2, p3-mid)
-        
+
         if self.scale_invariant:
             dis_index=[0,1,2,15,16,17]
             max_dis = buf[:,dis_index].max()
@@ -298,10 +296,10 @@ class TriangleNet(nn.Module):
 
     def forward(self, points, norms):
         batch, n_points = points.shape[0], points.shape[1]
-       
+
         x = self.extractor(points, norms, self.feature_num)
         # t = time.time()
-        
+
         x = x.transpose(2,1) #batch, 24, f_num
         feature = self.feat(x)#batch, 1024,f_num
         x_point = feature.view(batch,1024, n_points, self.feature_num//n_points) #32,1024,16,256
@@ -329,7 +327,7 @@ class TriangleNet_Seg(nn.Module):
         self.bn1 = nn.BatchNorm1d(512)
         self.bn2 = nn.BatchNorm1d(256)
         self.relu = nn.ReLU()
-        
+
         if descriptor_type == 'A':
             self.extractor = self.extract_feature_A
         elif descriptor_type == 'B':
@@ -337,7 +335,7 @@ class TriangleNet_Seg(nn.Module):
         elif descriptor_type == 'C':
             self.extractor = self.extract_feature_C
         else:
-            raise Exception 
+            raise Exception
 
 
         self.seg_net = nn.Sequential(
@@ -364,7 +362,7 @@ class TriangleNet_Seg(nn.Module):
         ang1b = angle_between_batch(p2-p1, n2)
         ang1c = angle_between_batch(n1, n2)
         buf = torch.cat([dis1,ang1a, ang1b, ang1c],dim=2)
-        
+
         if self.scale_invariant:
             max_dis = buf[:,0].max()
             buf[:,0] = buf[:,0]/max_dis
@@ -381,18 +379,18 @@ class TriangleNet_Seg(nn.Module):
         dis1 = vlen(p1-p2)
         dis2 = vlen(p2-p3)
         dis3 = vlen(p3-p1)
-        
+
         ang1a = angle_between_batch(p1-p2, n1)
         ang1b = angle_between_batch(p1-p3, n1)
         ang2a = angle_between_batch(p2-p1, n2)
         ang2b = angle_between_batch(p2-p3, n2)
         ang3a = angle_between_batch(p3-p1, n3)
         ang3b = angle_between_batch(p3-p2, n3)
-        
+
         angt1 = angle_between_batch(p1-p2, p1-p3)
         angt2 = angle_between_batch(p2-p1, p2-p3)
         angt3 = angle_between_batch(p3-p1, p3-p2)
-        
+
         buf = torch.cat([dis1,dis2,dis3,ang1a,ang1b,ang2a,ang2b,ang3a,ang3b,angt1,angt2,angt3],dim=2)
 
         if self.scale_invariant:
@@ -405,43 +403,43 @@ class TriangleNet_Seg(nn.Module):
         p_num = points.shape[1]
         idx = torch.randint(p_num, size=(f_num, 3))
         idx0=torch.arange(p_num).view(-1,1).repeat((1,f_num//p_num)).flatten()
-        
+
         p1, p2, p3 = points[:,idx0], points[:,idx[:,1]], points[:,idx[:,2]]
         n1, n2, n3 = norms[:,idx0], norms[:,idx[:,1]], norms[:,idx[:,2]]
         dis1 = vlen(p1-p2)
         dis2 = vlen(p2-p3)
         dis3 = vlen(p3-p1)
-        
+
         ang1a = angle_between_batch(p1-p2, n1)
         ang1b = angle_between_batch(p1-p3, n1)
         ang2a = angle_between_batch(p2-p1, n2)
         ang2b = angle_between_batch(p2-p3, n2)
         ang3a = angle_between_batch(p3-p1, n3)
         ang3b = angle_between_batch(p3-p2, n3)
-        
+
         angt1 = angle_between_batch(p1-p2, p1-p3)
         angt2 = angle_between_batch(p2-p1, p2-p3)
         angt3 = angle_between_batch(p3-p1, p3-p2)
-        
+
         buf = torch.cat([dis1,dis2,dis3,ang1a,ang1b,ang2a,ang2b,ang3a,ang3b,angt1,angt2,angt3],dim=2)
-        
+
         mid = (p1+p2+p3)/3
-        
+
         mn1 = angle_between_batch(p1-mid, n1)
         mn2 = angle_between_batch(p2-mid, n2)
-        mn3 = angle_between_batch(p3-mid, n3)    
-        
+        mn3 = angle_between_batch(p3-mid, n3)
+
         dism1 = vlen(p1-mid)
         dism2 = vlen(p2-mid)
         dism3 = vlen(p3-mid)
-        
+
         angm1a = angle_between_batch(p1-p2, p1-mid)
         angm1b = angle_between_batch(p1-p3, p1-mid)
         angm2a = angle_between_batch(p2-p1, p2-mid)
         angm2b = angle_between_batch(p2-p3, p2-mid)
         angm3a = angle_between_batch(p3-p1, p3-mid)
         angm3b = angle_between_batch(p3-p2, p3-mid)
-        
+
         if self.scale_invariant:
             dis_index=[0,1,2,15,16,17]
             max_dis = buf[:,dis_index].max()
@@ -452,9 +450,9 @@ class TriangleNet_Seg(nn.Module):
 
     def forward(self, points, norms, label):
         batch, n_points = points.shape[0], points.shape[1]
-    
+
         x = self.extractor(points, norms, self.feature_num)
-    
+
         x = x.transpose(2,1) #batch, 24, f_num
         feature = self.feat(x)#batch, 1024,f_num
         x_point = feature.view(batch,1024, n_points, self.feature_num//n_points) #32,1024,16,256
@@ -471,7 +469,7 @@ class TriangleNet_Seg(nn.Module):
         seg_result = seg_result.view(batch, n_points, self.part_num) # [B, N, 50]
 
         return seg_result
-    
+
 if __name__ == "__main__":
     net = TriangleNet(inp=24,k=40,descriptor_type='C',encoder_type="full").cuda()
     points = torch.randn(1,2048,3).cuda()
