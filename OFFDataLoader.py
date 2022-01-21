@@ -110,7 +110,8 @@ class PointSampler(object):
             return sampled_points_with_norm
         else:
             # print(sample_point)
-            print(sampled_points.shape)
+            # print("Sampling data")
+            # print(sampled_points.shape)
             return sampled_points
 
 
@@ -184,6 +185,7 @@ class PointCloudData(Dataset):
         verts, faces = read_off(file)
         if self.transforms:
             pointcloud = self.transforms((verts, faces))
+        # print(pointcloud.shape)
         return pointcloud
 
     def __getitem__(self, idx):
@@ -191,8 +193,9 @@ class PointCloudData(Dataset):
         category = self.files[idx]['category']
         with open(pcd_path, 'r') as f:
             pointcloud = self.__preproc__(f)
-        return {'pointcloud': pointcloud,
-                'category': self.classes[category]}
+        # return {'pointcloud': pointcloud,
+        #         'category': self.classes[category]}
+        return pointcloud, self.classes[category]
 
 
 

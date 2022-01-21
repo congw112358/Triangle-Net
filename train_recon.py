@@ -7,12 +7,19 @@ import torch.nn.functional as F
 import time
 import numpy as np
 from model import Reconstruction, TriangleNet
-from dataloader import load_data, ModelNetDataLoader
+# from dataloader import load_data, ModelNetDataLoader
+from dataloader import *
+from OFFDataLoader import *
+from torchvision import transforms, utils
+from pathlib import Path
+
 from tqdm import tqdm
 import argparse
+
 parser = argparse.ArgumentParser('Triangle-Net')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--datapath', type=str, default=r'./data/modelnet40_ply_hdf5_2048/', help='path of modelnet 40 dataset')
+parser.add_argument('--offpath', type=str, default="mesh_data/ModelNet40", help='path of modelnet 40 dataset')
 parser.add_argument('--episodes', type=int, default=1000)
 parser.add_argument('--n_points', type=int, default=16)
 parser.add_argument('--descriptor_type', type=str, default='C', help='[A, B, C]')
@@ -25,8 +32,44 @@ train_episodes = args.episodes
 descriptor_type = args.descriptor_type
 n_points = args.n_points
 rot_type = args.rot_type
+OFF_Path = Path(args.offpath)
 
+################################### OFF DataLoader #########################################################
+
+train_OFF_transforms = transforms.Compose([
+    PointSampler(1024),
+    Normalize(),
+    RandomNoise()
+    # ToTensor()
+])
+
+test_OFF_transforms = transforms.Compose([
+    PointSampler(1024),
+    Normalize(),
+    RandomNoise()
+    # ToTensor()
+])
+
+train_OFF_dataset = PointCloudData(OFF_Path, transform=train_OFF_transforms)
+test_OFF_dataset = PointCloudData(OFF_Path,valid=True, folder='test', transform=test_OFF_transforms)
+# print(type(train_OFF_dataset))
+# print(len(train_OFF_dataset))
+# print(train_OFF_dataset[0].shape)
+# print(type(train_OFF_dataset[0]["pointcloud"]))
+print(train_OFF_dataset[1000]["pointcloud"])
+print(train_OFF_dataset[1000]["category"])
+
+num_data = len(train_OFF_dataset)
+train_data_new = np.ndarray((num_data, 1024, 3))
+train_label_new = np.ndarray((num_data, 1))
+
+
+###########################################################################################################
 train_data, train_label, test_data, test_label = load_data(datapath, classification=True)
+print(type(train_data))
+print(train_data.shape)
+print(train_label.shape)
+
 trainDataset = ModelNetDataLoader(train_data, train_label, use_voxel=True, point_num = n_points, rot_type=rot_type)
 testDataset = ModelNetDataLoader(test_data, test_label, use_voxel=True, point_num = n_points, rot_type=rot_type)
 trainDataLoader = torch.utils.data.DataLoader(trainDataset, batch_size=batch_size, shuffle=True) #, num_workers = 6

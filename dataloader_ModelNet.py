@@ -7,9 +7,11 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import random
 from itertools import combinations
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial import KDTree
+from OFFDataLoader import *
+from torchvision import transforms, utils
 
 
 # reference code: # https://github.com/daavoo/pyntcloud/blob/master/pyntcloud/structures/voxelgrid.py
@@ -100,6 +102,19 @@ def load_data(dir,classification = False):
         return train_data, train_label, test_data, test_label
     else:
         return train_data, train_Seglabel, test_data, test_Seglabel
+
+
+############################################ OFF DataLoader ##############################################
+def default_OFF_Sampler():
+    return transfroms.Compose([PointSampler(1024),
+                               Normalize()
+                               ToTensor()
+                               ])
+
+
+
+
+##########################################################################################################
 
 class ModelNetDataLoader(Dataset):
     def __init__(self, data, labels, point_num=16, rot=False, use_buffer=True, use_voxel=False, rot_type="SO3"):
