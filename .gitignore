@@ -1,5 +1,6 @@
 # data
-data/*
+data/
+mesh_data
 
 # python
 __pycache__/

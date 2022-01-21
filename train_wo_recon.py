@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser('Triangle-Net')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--datapath', type=str, default=r'./data/modelnet40_ply_hdf5_2048/', help='path of modelnet 40 dataset')
 parser.add_argument('--episodes', type=int, default=1000)
-parser.add_argument('--n_points', type=int, default=16)
+parser.add_argument('--n_points', type=int, default=1024)
 parser.add_argument('--descriptor_type', type=str, default='C', help='[A, B, C]')
 parser.add_argument('--rot_type', type=str, default='SO3', help='[SO3, z]')
 args = parser.parse_args()
@@ -70,7 +70,7 @@ for ep in range(train_episodes):
     test_acc =  correct_cnt/total_cnt
     if test_acc > bestacc:
         bestacc = test_acc
-        torch.save(net, f"best_net_{test_acc}_{n_points}.pth")
+        torch.save(net, "log/best_net_{test_acc}_{n_points}.pth")
 
     print("test acc: ",test_acc, "best test acc: ", bestacc)
 

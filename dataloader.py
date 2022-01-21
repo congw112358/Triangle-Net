@@ -89,13 +89,32 @@ def load_data(dir,classification = False):
     test_Seglabel = np.concatenate([Seglabel_test0,Seglabel_test1])
 
     if classification:
-        print(len(train_data))
-        print(len(train_data[0]))
-        print(type(train_data[0]))
-        print(train_data[0].shape)
+        num_train = len(train_data)
+        num_test = len(test_data)
+        sampled_train_data = np.ndarray((num_train, 1024, 3))
+        sampled_test_data = np.ndarray((num_test, 1024, 3))
+
+        for i in range(num_train):
+            num_of_rows = train_data[i].shape[0]
+            random_indices = np.random.choice(num_of_rows, size=1024, replace=False)
+            # sampled_pointcloud = train_data[i][random_indices, :]
+            sampled_train_data[i] = train_data[i][random_indices, :]
+        print(sampled_train_data.shape)
+
+        for i in range(num_test):
+            num_of_rows = test_data[i].shape[0]
+            random_indices = np.random.choice(num_of_rows, size=1024, replace=False)
+            # sampled_pointcloud = train_data[i][random_indices, :]
+            sampled_test_data[i] = test_data[i][random_indices, :]
+
+        print(sampled_test_data.shape)
+        # print(len(train_data))
+        # print(len(train_data[0]))
+        # print(type(train_data[0]))
+        # print(train_data[0].shape)
         # print(train_data.shape())
         # print(test_data.shape())
-        return train_data, train_label, test_data, test_label
+        return sampled_train_data, train_label, sampled_test_data, test_label
     else:
         return train_data, train_Seglabel, test_data, test_Seglabel
 
