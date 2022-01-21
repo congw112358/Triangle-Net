@@ -35,7 +35,7 @@ inp_lookup={"A":4,"B":12,"C":24}
 net = TriangleNet(k=40, inp=inp_lookup[descriptor_type], descriptor_type=descriptor_type).cuda()
 recon_net = Reconstruction().cuda()
 optimizer_tri = optim.Adam(net.parameters(), lr=0.001, betas=(0.5, 0.999),weight_decay = 1e-4)
-optimizer_recon = optim.Adam(recon_net.parameters(), lr=0.001, betas=(0.5, 0.999)) 
+optimizer_recon = optim.Adam(recon_net.parameters(), lr=0.001, betas=(0.5, 0.999))
 bestacc=0
 for ep in range(train_episodes):
     print("episode", ep)
@@ -69,7 +69,7 @@ for ep in range(train_episodes):
         target = target[:, 0]
         target = target.cuda()
         # voxels = voxels.cuda()
-        
+
         with torch.no_grad():
             pred, z = net(points, norms)
         pred_choice = pred.data.max(1)[1]

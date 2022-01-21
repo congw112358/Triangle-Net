@@ -19,11 +19,11 @@ def create_voxel(points_np, size3d):
 
     xyzmin = pts_np.min(0)
     xyzmax = pts_np.max(0)
-    
+
     margin = max(xyzmax - xyzmin) - (xyzmax - xyzmin)
     xyzmin = xyzmin - margin / 2
     xyzmax = xyzmax + margin / 2
-    
+
     segments = []
     shape = []
     for i in range(3):
@@ -89,6 +89,12 @@ def load_data(dir,classification = False):
     test_Seglabel = np.concatenate([Seglabel_test0,Seglabel_test1])
 
     if classification:
+        print(len(train_data))
+        print(len(train_data[0]))
+        print(type(train_data[0]))
+        print(train_data[0].shape)
+        # print(train_data.shape())
+        # print(test_data.shape())
         return train_data, train_label, test_data, test_label
     else:
         return train_data, train_Seglabel, test_data, test_Seglabel
@@ -122,13 +128,13 @@ class ModelNetDataLoader(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        if self.use_buffer: 
+        if self.use_buffer:
             if index not in self.o3dmodel:
                 self.o3dmodel[index] = add_normal(self.data[index])
             o3dpc = self.o3dmodel[index]
         else:
             o3dpc = add_normal(self.data[index])
-        
+
         if self.rot:
             if self.rot_type == "SO3":
                 o3dpc = self.rotate_point_cloud_random_SO3(o3dpc)
@@ -226,10 +232,10 @@ class ScanObjectNNDataLoader(Dataset):
         self.n_points = n_points
         self.rot = rot
         self.rot_type=rot_type
-        
+
     def __len__(self):
         return self.lb.shape[0]
-    
+
     def rotate_point_cloud_random_SO3(self, pc):
         roll, pitch, yaw = np.random.rand(3)*np.pi*2
         rot = R.from_euler('ZYX', (yaw, pitch, roll))
@@ -238,7 +244,7 @@ class ScanObjectNNDataLoader(Dataset):
         pc = pc.rotate(rot.as_dcm(), center=center)
 
         return pc
-    
+
 
     def __getitem__(self, index):
         idx = np.random.choice(self.points.shape[1], size=(self.n_points,))
@@ -252,14 +258,13 @@ class ScanObjectNNDataLoader(Dataset):
                 pc = self.rotate_point_cloud_random_z(pc)
             if self.rot_type == "SO3":
                 pc = self.rotate_point_cloud_random_SO3(pc)
-                
+
             points = np.asarray(pc.points).astype(np.float32) #2048,30
             normals = np.asarray(pc.normals).astype(np.float32) #2048,30
-                
-        
+
         return points, normals, self.lb[index]
 
-    
+
 def load_h5_scanobjectNN(h5_train,h5_test):
     f = h5py.File(h5_train)
     train_data = f['data'][:]
@@ -269,6 +274,5 @@ def load_h5_scanobjectNN(h5_train,h5_test):
     test_label = f['label'][:]
     return train_data, train_label, test_data, test_label
 
-        
 
 
