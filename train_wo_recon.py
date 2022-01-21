@@ -70,7 +70,7 @@ for ep in range(train_episodes):
     test_acc =  correct_cnt/total_cnt
     if test_acc > bestacc:
         bestacc = test_acc
-        torch.save(net, "log/best_net_{test_acc}_{n_points}.pth")
+        torch.save(net, f"log/best_net_{test_acc}_{n_points}.pth")
 
     print("test acc: ",test_acc, "best test acc: ", bestacc)
 

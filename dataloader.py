@@ -119,7 +119,7 @@ def load_data(dir,classification = False):
         return train_data, train_Seglabel, test_data, test_Seglabel
 
 class ModelNetDataLoader(Dataset):
-    def __init__(self, data, labels, point_num=16, rot=False, use_buffer=True, use_voxel=False, rot_type="SO3"):
+    def __init__(self, data, labels, point_num=16, rot=False, use_buffer=True, use_voxel=False, rot_type="z"):
         self.data, self.labels = data, labels
         self.point_num = point_num
         self.o3dmodel={}
@@ -235,7 +235,7 @@ class SegmentationLoader(Dataset):
 
 
 class ScanObjectNNDataLoader(Dataset):
-    def __init__(self, point, lb, num_classes=15,n_points=2048, rot=False, rot_type="SO3"):
+    def __init__(self, point, lb, num_classes=15,n_points=2048, rot=False, rot_type="z"):
         points = []
         normals = []
         for p in point:
