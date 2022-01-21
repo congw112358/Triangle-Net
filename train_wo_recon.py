@@ -17,7 +17,7 @@ from pathlib import Path
 
 
 parser = argparse.ArgumentParser('Triangle-Net')
-parser.add_argument('--batch_size', type=int, default=32, help='batch size')
+parser.add_argument('--batch_size', type=int, default=8, help='batch size')
 parser.add_argument('--datapath', type=str, default=r'./data/modelnet40_ply_hdf5_2048/', help='path of modelnet 40 dataset')
 parser.add_argument('--offpath', type=str, default="mesh_data/ModelNet40", help='path of modelnet 40 dataset')
 
