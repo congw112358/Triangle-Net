@@ -170,7 +170,8 @@ class Encoder(nn.Module):
 
 
 class TriangleNet(nn.Module):
-    def __init__(self, k=2,inp=4, feature_num=4096, descriptor_type='A', scale_invariant=False, point_feature=False, encoder_type="slim"):
+    # def __init__(self, k=2,inp=4, feature_num=4096, descriptor_type='A', scale_invariant=False, point_feature=False, encoder_type="slim"):
+    def __init__(self, k=2,inp=4, feature_num=2048, descriptor_type='A', scale_invariant=False, point_feature=False, encoder_type="slim"):
         super(TriangleNet, self).__init__()
         self.feature_num = feature_num
         self.scale_invariant = scale_invariant
@@ -247,10 +248,15 @@ class TriangleNet(nn.Module):
 
     def extract_feature_C(self, points, norms, f_num):
         p_num = points.shape[1]
+        # print(f_num)
+        # print(p_num)
         idx = torch.randint(p_num, size=(f_num, 3))
+        # print(idx.shape)
         idx0=torch.arange(p_num).view(-1,1).repeat((1,f_num//p_num)).flatten()
 
         p1, p2, p3 = points[:,idx0], points[:,idx[:,1]], points[:,idx[:,2]]
+        # print(p1.shape)
+        # print(p2.shape)
         n1, n2, n3 = norms[:,idx0], norms[:,idx[:,1]], norms[:,idx[:,2]]
         dis1 = vlen(p1-p2)
         dis2 = vlen(p2-p3)
@@ -297,6 +303,9 @@ class TriangleNet(nn.Module):
     def forward(self, points, norms):
         batch, n_points = points.shape[0], points.shape[1]
 
+        # Here!!! Modify the feature_num for sparse point clouds
+        # self.feature_num=3900
+        # print("feature_num: ", self.feature_num)
         x = self.extractor(points, norms, self.feature_num)
         # t = time.time()
 
